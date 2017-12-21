@@ -23,7 +23,9 @@ exports.handleRequest = function (req, res) {
       console.log('You posted', url);
       archive.isUrlArchived(url, (url) => {
         // true
-        // TODO
+        httpHelpers.serveAssets(res, path.join(archive.paths.archivedSites, url + '.html'), (data) => {
+          res.end(data);
+        });
       }, (url) => {
         // false
         httpHelpers.serveAssets(res, archive.paths.publicLoading, (data) => {

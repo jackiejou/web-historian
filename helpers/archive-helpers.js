@@ -2,6 +2,7 @@ var fs = require('fs');
 var path = require('path');
 var _ = require('underscore');
 var https = require('https');
+var request = require('request');
 /*
  * You will need to reuse the same paths many times over in the course of this sprint.
  * Consider using the `paths` object below to store frequently used file paths. This way,
@@ -50,30 +51,42 @@ exports.addUrlToList = function(url) {
 
 // Server Only
 exports.isUrlArchived = function(url, trueCallback, falseCallback) {
-
+  fs.readdir(exports.paths.archivedSites, (err, files) => {
+    if (files.includes(url + '.html')) {
+      trueCallback(url);
+    } else {
+      falseCallback(url);
+    }
+  });
   // check if url is in /archives/sites/
   // if it is, trueCallback(url);
-
-  falseCallback(url);
-
 };
 
 // Worker
 exports.downloadUrls = function(url) {
-  https.get('https://' + url, (res) => {
-    html = '';
-    res.on('data', chunk => {
-      html += chunk;
-    });
-
-    res.on('end', () => {
-      let location = path.join(exports.paths.archivedSites, url + '.html');
-      console.log(location);
-      fs.writeFile(location, html, () => {
-        console.log('Wrote file to', location);
-      });
+  request('http://' + url, (error, response, body) => {
+    let location = path.join(exports.paths.archivedSites, url + '.html');
+    console.log(location);
+    fs.writeFile(location, body, () => {
+      console.log('Wrote file to', location);
     });
   });
+
+
+  // https.get('https://' + url, (res) => {
+  //   html = '';
+  //   res.on('data', chunk => {
+  //     html += chunk;
+  //   });
+
+  //   res.on('end', () => {
+  //     let location = path.join(exports.paths.archivedSites, url + '.html');
+  //     console.log(location);
+  //     fs.writeFile(location, html, () => {
+  //       console.log('Wrote file to', location);
+  //     });
+  //   });
+  // });
 };
 
 // Worker
