@@ -38,13 +38,18 @@ exports.readListOfUrls = function(callback) {
   });
 };
 
+
+
 // Not sure
 exports.isUrlInList = function(url, callback) {
 };
 
 // Server Only
 exports.addUrlToList = function(url) {
-  fs.appendFile(exports.paths.list, url + '\n', () => {
+  fs.appendFile(exports.paths.list, url + '\n', (err, data) => {
+    if (err) {
+      // do something
+    }
     console.log('Appended url!');
   });
 };
@@ -62,12 +67,42 @@ exports.isUrlArchived = function(url, trueCallback, falseCallback) {
   // if it is, trueCallback(url);
 };
 
+exports.readListOfUrlsAsync = function() {
+  return new Promise((resolve, reject) => {
+    fs.readFile(exports.paths.list, (err, data) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(data);
+      }
+    });
+  });
+};
+
+exports.writeToFileAsync = function(path, data) {
+  return new Promise((resolve, reject) => {
+    fs.writeFile(path, data, (err, data) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(console.log('File written'));
+      }
+    });
+  });
+};
+
+
 // Worker
 exports.downloadUrls = function(url) {
   request('http://' + url, (error, response, body) => {
     let location = path.join(exports.paths.archivedSites, url + '.html');
-    console.log(location);
-    fs.writeFile(location, body, () => {
+    if (error) {
+      // do something
+    }
+    fs.writeFile(location, body, (err, data) => {
+      if (err) {
+        // do something
+      }
       console.log('Wrote file to', location);
     });
   });
@@ -88,12 +123,15 @@ exports.downloadUrls = function(url) {
 };
 
 // Worker
-exports.removeFirstUrl = function() {
-// WORKER
-// string = readFile
-// var array = string.split('\n')
-// var site = array.shift()
-// worker(site)
-// var file = array.join('/n');
-// writeFile(file)
+exports.downloadUrlsAsync = function(url) {
+  return new Promise((resolve, reject) => {
+    request('http://' + url, (err, response, body) => {
+      let location = path.join(exports.paths.archivedSites, url + '.html');
+      if (err) {
+        reject(err);
+      } else {
+        resolve([url, body]);
+      }
+    });
+  });
 };
