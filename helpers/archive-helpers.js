@@ -71,8 +71,6 @@ exports.downloadUrls = function(url) {
       console.log('Wrote file to', location);
     });
   });
-
-
   // https.get('https://' + url, (res) => {
   //   html = '';
   //   res.on('data', chunk => {

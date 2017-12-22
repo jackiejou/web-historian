@@ -7,9 +7,19 @@ var fs = require('fs');
 exports.handleRequest = function (req, res) {
   
   if (req.method === 'GET') {
-    httpHelpers.serveAssets(res, archive.paths.publicIndex, (data) => {
-      res.end(data);
-    });
+    if (req.url === '/loading.html') {
+      httpHelpers.serveAssets(res, archive.paths.publicLoading, (data) => {
+        res.end(data);
+      });
+    } else if (req.url === '/') {
+      httpHelpers.serveAssets(res, archive.paths.publicIndex, (data) => {
+        res.end(data);
+      });
+    } else {
+      httpHelpers.serveAssets(res, path.join(archive.paths.archivedSites, req.url + '.html'), (data) => {
+        res.end(data);
+      });
+    }
   }
   
   // get url from POST request
@@ -23,14 +33,12 @@ exports.handleRequest = function (req, res) {
       console.log('You posted', url);
       archive.isUrlArchived(url, (url) => {
         // true
-        httpHelpers.serveAssets(res, path.join(archive.paths.archivedSites, url + '.html'), (data) => {
-          res.end(data);
-        });
+        res.writeHead(302, {Location: url});
+        res.end();
       }, (url) => {
         // false
-        httpHelpers.serveAssets(res, archive.paths.publicLoading, (data) => {
-          res.end(data);
-        });
+        res.writeHead(302, {Location: 'loading.html'});
+        res.end();
         archive.addUrlToList(url);
       });
       // is Url Archived
